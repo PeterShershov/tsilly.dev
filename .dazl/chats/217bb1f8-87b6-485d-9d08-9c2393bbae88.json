@@ -2,8 +2,26 @@
   "schemaVersion": 6,
   "id": "217bb1f8-87b6-485d-9d08-9c2393bbae88",
   "createdAt": "2026-06-30T12:58:33.314Z",
-  "updatedAt": "2026-06-30T12:58:33.314Z",
+  "updatedAt": "2026-07-12T17:02:17.874Z",
   "type": "main",
-  "messages": [],
+  "messages": [
+    {
+      "id": "f7f41ef8-0372-4c38-a02b-7b2b5fc819ac",
+      "role": "system",
+      "type": "manualEdits",
+      "createdAt": "2026-07-12T17:02:17.873Z",
+      "parts": [
+        {
+          "type": "file-edit",
+          "editType": "create",
+          "filePath": ".dazl/chats/217bb1f8-87b6-485d-9d08-9c2393bbae88.json"
+        }
+      ],
+      "commitInfo": {
+        "hash": "ba203800c1b24092a5864a582e139bfb4756a7d5",
+        "message": "Save changes"
+      }
+    }
+  ],
   "createdByUserId": "local-dev"
 }
