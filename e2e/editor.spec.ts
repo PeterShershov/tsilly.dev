@@ -322,10 +322,16 @@ test.describe("Tsilly Editor", () => {
     // Type more text - cursor should continue from where it was
     await page.keyboard.type(" world");
 
+    // Ensure Monaco is available before reading the editor content
+    await page.waitForFunction(
+      () => (window as any).monaco?.editor?.getEditors()?.length >= 3,
+      { timeout: 15000 },
+    );
+
     // Get the editor content
     const content = await page.evaluate(() => {
       const monaco = (window as any).monaco;
-      const editors = monaco.editor.getEditors();
+      const editors = monaco?.editor?.getEditors() ?? [];
       for (const editor of editors) {
         if (editor.getContainerDomNode().dataset.testid === "editor-css") {
           return editor.getValue();
