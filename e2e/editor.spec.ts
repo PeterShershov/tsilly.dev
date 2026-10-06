@@ -1,6 +1,8 @@
 import { test, expect, Page } from "@playwright/test";
 import LZString from "lz-string";
 
+type MonacoWindow = Window & { monaco?: typeof import("monaco-editor") };
+
 async function setEditorValue(page: Page, testId: string, value: string) {
   // Find the editor container and use Monaco's API to set value
   await page.evaluate(
@@ -8,8 +10,7 @@ async function setEditorValue(page: Page, testId: string, value: string) {
       const container = document.querySelector(`[data-testid="${testId}"]`);
       if (!container) throw new Error(`Editor ${testId} not found`);
       // Monaco stores editor instance reference - find it through the DOM
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const monaco = (window as any).monaco;
+      const monaco = (window as MonacoWindow).monaco;
       if (monaco) {
         const editors = monaco.editor.getEditors();
         for (const editor of editors) {
@@ -37,7 +38,7 @@ test.describe("Tsilly Editor", () => {
     });
     // Wait for Monaco global to be available
     await page.waitForFunction(
-      () => (window as any).monaco?.editor?.getEditors()?.length >= 3,
+      () => ((window as MonacoWindow).monaco?.editor.getEditors().length ?? 0) >= 3,
       {
         timeout: 15000,
       },
@@ -145,7 +146,7 @@ test.describe("Tsilly Editor", () => {
       timeout: 15000,
     });
     await newPage.waitForFunction(
-      () => (window as any).monaco?.editor?.getEditors()?.length >= 3,
+      () => ((window as MonacoWindow).monaco?.editor.getEditors().length ?? 0) >= 3,
       {
         timeout: 15000,
       },
@@ -187,7 +188,7 @@ test.describe("Tsilly Editor", () => {
       timeout: 15000,
     });
     await page.waitForFunction(
-      () => (window as any).monaco?.editor?.getEditors()?.length >= 3,
+      () => ((window as MonacoWindow).monaco?.editor.getEditors().length ?? 0) >= 3,
       { timeout: 15000 },
     );
 
@@ -265,7 +266,7 @@ test.describe("Tsilly Editor", () => {
       timeout: 15000,
     });
     await page.waitForFunction(
-      () => (window as any).monaco?.editor?.getEditors()?.length >= 3,
+      () => ((window as MonacoWindow).monaco?.editor.getEditors().length ?? 0) >= 3,
       { timeout: 15000 },
     );
 
@@ -284,7 +285,7 @@ test.describe("Tsilly Editor", () => {
       timeout: 15000,
     });
     await page.waitForFunction(
-      () => (window as any).monaco?.editor?.getEditors()?.length >= 3,
+      () => ((window as MonacoWindow).monaco?.editor.getEditors().length ?? 0) >= 3,
       { timeout: 15000 },
     );
 
@@ -324,13 +325,13 @@ test.describe("Tsilly Editor", () => {
 
     // Ensure Monaco is available before reading the editor content
     await page.waitForFunction(
-      () => (window as any).monaco?.editor?.getEditors()?.length >= 3,
+      () => ((window as MonacoWindow).monaco?.editor.getEditors().length ?? 0) >= 3,
       { timeout: 15000 },
     );
 
     // Get the editor content
     const content = await page.evaluate(() => {
-      const monaco = (window as any).monaco;
+      const monaco = (window as MonacoWindow).monaco;
       const editors = monaco?.editor?.getEditors() ?? [];
       for (const editor of editors) {
         if (editor.getContainerDomNode().dataset.testid === "editor-css") {
@@ -519,7 +520,7 @@ console.error('error three')`,
         timeout: 15000,
       });
       await page.waitForFunction(
-        () => (window as any).monaco?.editor?.getEditors()?.length >= 3,
+        () => ((window as MonacoWindow).monaco?.editor.getEditors().length ?? 0) >= 3,
         {
           timeout: 15000,
         },
@@ -542,7 +543,7 @@ console.error('error three')`,
         timeout: 15000,
       });
       await page.waitForFunction(
-        () => (window as any).monaco?.editor?.getEditors()?.length >= 3,
+        () => ((window as MonacoWindow).monaco?.editor.getEditors().length ?? 0) >= 3,
         {
           timeout: 15000,
         },

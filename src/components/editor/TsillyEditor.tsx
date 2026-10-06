@@ -1,10 +1,7 @@
 import "allotment/dist/style.css";
 import { useCallback, useEffect, useRef, useState } from "react";
-import {
-  EditorProvider,
-  useEditor,
-  initialState,
-} from "~/context/EditorContext";
+import { useEditor, initialState } from "~/context/EditorContext";
+import { EditorProvider } from "~/context/EditorProvider";
 import { SaveContext, type SaveContextValue } from "~/context/SaveContext";
 import { useDebouncedLocalStorage } from "~/hooks/useLocalStorage";
 import { getWorkspaceFromUrl, getShareUrl } from "~/lib/share";
@@ -30,7 +27,17 @@ function EditorWithPersistence() {
   const loadedFromUrl = useRef(false);
   const [loading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [lastSavedState, setLastSavedState] = useState<{ html: string; css: string; typescript: string } | null>(null);
+  const [sharedWorkspace] = useState(getWorkspaceFromUrl);
+  // A workspace loaded from the URL counts as the "saved" state
+  const [lastSavedState, setLastSavedState] = useState<{ html: string; css: string; typescript: string } | null>(() =>
+    sharedWorkspace
+      ? {
+          html: sharedWorkspace.html ?? "",
+          css: sharedWorkspace.css ?? "",
+          typescript: sharedWorkspace.typescript ?? "",
+        }
+      : null,
+  );
   const editorsReadyCount = useRef(0);
   const editorsReady = useRef(false);
   const minTimeElapsed = useRef(false);
@@ -69,7 +76,7 @@ function EditorWithPersistence() {
     );
 
   // Load layout synchronously to avoid flash
-  const [savedLayout, setSavedLayout] = useState<Layout>(() => {
+  const [initialLayout] = useState<Layout>(() => {
     try {
       const item = window.localStorage.getItem("tsilly-layout");
       if (item) {
@@ -80,19 +87,13 @@ function EditorWithPersistence() {
     }
     return initialState.layout;
   });
+  const savedLayout = useRef(initialLayout);
 
   useEffect(() => {
     // First, check if there's a shared workspace in the URL
-    const sharedWorkspace = getWorkspaceFromUrl();
     if (sharedWorkspace) {
       loadedFromUrl.current = true;
       dispatch({ type: "LOAD_STATE", payload: sharedWorkspace });
-      // Mark this as the "saved" state since it came from URL
-      setLastSavedState({
-        html: sharedWorkspace.html ?? "",
-        css: sharedWorkspace.css ?? "",
-        typescript: sharedWorkspace.typescript ?? "",
-      });
       // Don't clear URL - keep it for bookmarking/refreshing
       // Set initialLoadDone after a microtask to ensure state is applied
       queueMicrotask(() => {
@@ -119,23 +120,23 @@ function EditorWithPersistence() {
 
   // Load layout on mount
   useEffect(() => {
-    if (savedLayout !== state.layout) {
-      dispatch({ type: "SET_LAYOUT", payload: savedLayout });
+    if (initialLayout !== state.layout) {
+      dispatch({ type: "SET_LAYOUT", payload: initialLayout });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Save layout when it changes
   useEffect(() => {
-    if (state.layout !== savedLayout) {
-      setSavedLayout(state.layout);
+    if (state.layout !== savedLayout.current) {
+      savedLayout.current = state.layout;
       try {
         window.localStorage.setItem("tsilly-layout", JSON.stringify(state.layout));
       } catch (error) {
         console.warn('Error saving layout to localStorage:', error);
       }
     }
-  }, [state.layout, savedLayout]);
+  }, [state.layout]);
 
   useEffect(() => {
     if (!initialLoadDone.current) return;
