@@ -1,4 +1,4 @@
-import { test, expect, Page } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
 import LZString from "lz-string";
 
 type MonacoWindow = Window & { monaco?: typeof import("monaco-editor") };
