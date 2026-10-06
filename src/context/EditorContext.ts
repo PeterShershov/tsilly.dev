@@ -1,4 +1,4 @@
-import { createContext, useContext, useReducer, type ReactNode } from "react";
+import { createContext, useContext } from "react";
 import type {
   EditorState,
   EditorAction,
@@ -19,7 +19,7 @@ const DEFAULT_TS_CONFIG: TypeScriptConfig = {
   target: "esnext",
 };
 
-const initialState: EditorState = {
+export const initialState: EditorState = {
   html: DEFAULT_HTML,
   css: DEFAULT_CSS,
   typescript: DEFAULT_TYPESCRIPT,
@@ -38,7 +38,7 @@ const initialState: EditorState = {
   layout: "vertical",
 };
 
-function editorReducer(state: EditorState, action: EditorAction): EditorState {
+export function editorReducer(state: EditorState, action: EditorAction): EditorState {
   switch (action.type) {
     case "SET_HTML":
       return { ...state, html: action.payload };
@@ -87,17 +87,7 @@ interface EditorContextValue {
   dispatch: React.Dispatch<EditorAction>;
 }
 
-const EditorContext = createContext<EditorContextValue | null>(null);
-
-export function EditorProvider({ children }: { children: ReactNode }) {
-  const [state, dispatch] = useReducer(editorReducer, initialState);
-
-  return (
-    <EditorContext.Provider value={{ state, dispatch }}>
-      {children}
-    </EditorContext.Provider>
-  );
-}
+export const EditorContext = createContext<EditorContextValue | null>(null);
 
 export function useEditor() {
   const context = useContext(EditorContext);
@@ -106,5 +96,3 @@ export function useEditor() {
   }
   return context;
 }
-
-export { initialState };

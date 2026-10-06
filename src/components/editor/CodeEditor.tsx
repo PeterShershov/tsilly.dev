@@ -19,11 +19,17 @@ export function CodeEditor({
   const containerRef = useRef<HTMLDivElement>(null);
   const editorRef = useRef<Editor | null>(null);
   const lastValueRef = useRef(value);
+  const valueRef = useRef(value);
   const onChangeRef = useRef(onChange);
+  const onReadyRef = useRef(onReady);
   const [monaco, setMonaco] = useState<Monaco | null>(null);
 
-  // Keep onChange ref up to date
-  onChangeRef.current = onChange;
+  // Keep refs to the latest props, so the editor is not recreated when they change
+  useEffect(() => {
+    valueRef.current = value;
+    onChangeRef.current = onChange;
+    onReadyRef.current = onReady;
+  });
 
   useEffect(() => {
     let cancelled = false;
@@ -31,13 +37,13 @@ export function CodeEditor({
     async function loadMonaco() {
       const monacoModule = await import("monaco-editor");
       const editorWorker =
-        await import("monaco-editor/esm/vs/editor/editor.worker?worker");
+        await import("monaco-editor/editor/editor.worker?worker");
       const cssWorker =
-        await import("monaco-editor/esm/vs/language/css/css.worker?worker");
+        await import("monaco-editor/language/css/css.worker?worker");
       const htmlWorker =
-        await import("monaco-editor/esm/vs/language/html/html.worker?worker");
+        await import("monaco-editor/language/html/html.worker?worker");
       const tsWorker =
-        await import("monaco-editor/esm/vs/language/typescript/ts.worker?worker");
+        await import("monaco-editor/language/typescript/ts.worker?worker");
 
       if (cancelled) return;
 
@@ -114,7 +120,7 @@ export function CodeEditor({
       existingModel.dispose();
     }
 
-    const model = monaco.editor.createModel(value, language, uri);
+    const model = monaco.editor.createModel(valueRef.current, language, uri);
 
     const editor = monaco.editor.create(containerRef.current, {
       model,
@@ -143,7 +149,7 @@ export function CodeEditor({
     });
 
     // Signal that the editor is ready
-    onReady?.();
+    onReadyRef.current?.();
 
     return () => {
       disposable.dispose();
